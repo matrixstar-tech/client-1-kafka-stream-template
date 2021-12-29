@@ -1,0 +1,25 @@
+serviceName: pods-rtr-send-workflow-mgmt
+logLevel: INFO
+server:
+  port : 8086
+
+spring:
+  kafka:
+    stream:
+      sourceTopic:
+        opfJms: test-input
+      targetTopic:
+        remittance: test_remittance
+        transaction: test-output
+        channels: test
+        dlq: test-dlq
+      server:
+        bootstrap.servers: localhost:9092
+        application.id: pods-rtr-send-stream-group-test
+      schema:
+        schema.registry.url: localhost:8082
+
+
+message:
+  header:
+    classification-level: Confidential
