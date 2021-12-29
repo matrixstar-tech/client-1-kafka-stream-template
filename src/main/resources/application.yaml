@@ -1,42 +1,33 @@
-server.port: 9296
+server.port: 8086
 spring.cloud.stream:
   bindings:
     process-in-0:
       destination: ep_cp_glow_zhanw28_raw_source_1
       content-type: application/*+json
+      group: group-wells   
   kafka.streams.binder:
-    application-id: pods-rtr-send-stream-group-wells6
-    deserialization-exception-handler: sendToDlq  # logAndContinue | sendToDlq
-    brokers: bk02.r1.c4.pkfka.dev.td.com:9096,bk03.r1.c4.pkfka.dev.td.com:9096,bk01.r1.c4.pkfka.dev.td.com:9096,bk04.r1.c4.pkfka.dev.td.com:9096
+    application-id: stream-group-wells1
+    deserialization-exception-handler: sendToDlq  # logAndContinue | sendToDlq | logAndFail
+    brokers: localhost:9092
     configuration:
       startOffset: latest  # earliest | latest
       retries: 2
       default:
-        '[key.serde]': org.apache.kafka.common.serialization.Serdes$ByteArraySerde
-        '[value.serde]': org.apache.kafka.common.serialization.Serdes$StringSerde
+        #'[key.serde]': org.apache.kafka.common.serialization.Serdes$ByteArraySerde
+        '[key.serde]': org.apache.kafka.common.serialization.Serdes$StringSerde
+        '[value.serde]': org.springframework.kafka.support.serializer.JsonSerde
+        #'[value.serde]': io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+        #'[value.serde]': io.confluent.kafka.streams.serdes.json.KafkaJsonSchemaSerde
       '[spring.json.trusted.packages]': "*"
       '[spring.kafka.consumer.properties.spring.json.trusted.packages]': "*"
-      '[schema.registry.url]': https://sr01.r1.c4.pkfka.dev.td.com:8081
-      '[basic.auth.credentials.source]': USER_INFO
-      '[basic.auth.user.info]': tprtsp363sprs:gqmt5ju6
-      '[schema.registry.ssl.truststore.location]': C:\\Wells\\Workspace\\Git\\demokafkastream\\src\\main\\resources\\kafka_dev_certificates\\tprtsp363sprs.client.prtsp.openstack.pkfka.dev.td.com.truststore.jks
-      '[schema.registry.ssl.truststore.password]': prtsp2021DEV
-      '[schema.registry.ssl.keystore.location]': C:\\Wells\Workspace\\Git\\demokafkastream\\src\\main\\resources\\kafka_dev_certificates\\tprtsp363sprs.client.prtsp.openstack.pkfka.dev.td.com.keystore.jks
-      '[schema.registry.ssl.keystore.password]': prtsp2021DEV
-      '[schema.registry.ssl.key.password]': prtsp2021DEV
-      '[security.protocol]': SSL
-      '[ssl.truststore.location]': C:\\Wells\\Workspace\\Git\\demokafkastream\\src\\main\\resources\\kafka_dev_certificates\\tprtsp363sprs.client.prtsp.openstack.pkfka.dev.td.com.truststore.jks
-      '[ssl.truststore.password]': prtsp2021DEV
-      '[ssl.keystore.location]': C:\\Wells\Workspace\\Git\\demokafkastream\\src\\main\\resources\\kafka_dev_certificates\\tprtsp363sprs.client.prtsp.openstack.pkfka.dev.td.com.keystore.jks
-      '[ssl.keystore.password]': prtsp2021DEV
-      '[ssl.key.password]': prtsp2021DEV    
+      '[schema.registry.url]': http://localhost:8081
   kafka.streams.bindings:
-    process-in-0:  
-      consumer:
+    process-in-0:   
+      consumer: 
+        dlqName: ep_cp_glow_1_json_zhanw28_dlq
         keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
-        valueSerde: org.springframework.kafka.support.serializer.JsonSerde
-        dlqName: ep_cp_glow_1_json_zhanw28_dlq_1
-
+        valueSerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+    
 logging: 
   file:
     name: pwssp-wires-schema-stream-application.log
