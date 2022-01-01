@@ -3,13 +3,11 @@ package com.td.pwssp.kafka.stream.utility;
 import org.slf4j.Logger;
 
 public class LogHelper {
-    public 	enum LogLevel {
-        TRACE, DEBUG, INFO, WARN, ERROR, OFF
-    }
     private String key;
     private final Logger logger;
 
     public LogHelper(Logger logger){
+        this.key = "Did not get key";
         this.logger = logger;
     }
 

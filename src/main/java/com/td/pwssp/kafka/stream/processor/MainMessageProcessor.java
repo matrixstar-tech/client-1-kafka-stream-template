@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import com.td.pwssp.kafka.stream.utility.LogHelper;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
@@ -25,7 +26,6 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.td.pwssp.kafka.stream.model.SchemaEpCpWiresGlowAmcbRawEventsValueV1;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,11 +41,13 @@ public class MainMessageProcessor {
 	
     @Bean
     public Consumer<KStream<String, byte[]>> process() {
-        return input ->
+		LogHelper lh = new LogHelper(log);
+		return input ->
                 input.foreach((key, value) -> {
                 	try {
-                		String s = new String(value, StandardCharsets.UTF_8);
-	                	log.trace("Json Topic Key: {} --- Json Topic Value: {}", key, s.toString());
+						lh.setKey(key);
+						String s = new String(value, StandardCharsets.UTF_8);
+	                	lh.trace("Json Topic Value: " + s);
 	                	
 	                	// test 1.  unhandle exception 
 	                	int a = 1000;
@@ -59,13 +61,13 @@ public class MainMessageProcessor {
 	        			//value = "qwqeqweqrq".getBytes();
 	        			returnValue = (JSONObject) parser.parse(s);
 	        			//returnValue = (JSONObject) returnValue.get("AciPayload");
-	        			log.trace("return value: " + returnValue);
+	        			lh.trace("return value: " + returnValue);
 	        			
 	        		} catch (ParseException e) {
-	        			log.error("Bad Message : has Json parse exception");
+	        			lh.error("Bad Message : has Json parse exception");
 	        			kafkaTemplate.send(dlqTopic, key.getBytes(),  value );
                 	} catch (Exception e) {
-                		log.error("Catch Exception:  {}", e.getMessage());
+                		lh.error("Catch Exception:  {}"+ e.getMessage());
                 		String exceptionDetail = "Catch Exception: " + e.getMessage() ;
                 		ProducerRecord<byte[], byte[]> record = new ProducerRecord<byte[], byte[]>(dlqTopic,key.getBytes(), value);
                 		record.headers().add("kafka_dlt-exception-message", exceptionDetail.getBytes());
